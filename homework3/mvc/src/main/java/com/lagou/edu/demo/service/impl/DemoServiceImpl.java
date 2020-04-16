@@ -5,7 +5,6 @@ import com.lagou.edu.mvcframework.annotations.LagouSecurity;
 import com.lagou.edu.mvcframework.annotations.LagouService;
 
 @LagouService("demoService")
-@LagouSecurity
 public class DemoServiceImpl implements IDemoService {
     @Override
     public String get(String name) {

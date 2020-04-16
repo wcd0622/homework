@@ -4,6 +4,7 @@ import com.lagou.edu.demo.service.IDemoService;
 import com.lagou.edu.mvcframework.annotations.LagouAutowired;
 import com.lagou.edu.mvcframework.annotations.LagouController;
 import com.lagou.edu.mvcframework.annotations.LagouRequestMapping;
+import com.lagou.edu.mvcframework.annotations.LagouSecurity;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +22,8 @@ public class DemoController {
      * @param name
      * @return
      */
-    @LagouRequestMapping("/query")
+    @LagouRequestMapping("/handle01")
+ @LagouSecurity("wcd")
     public String query(HttpServletRequest request, HttpServletResponse response,String name) {
         return demoService.get(name);
     }

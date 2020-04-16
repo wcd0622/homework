@@ -10,32 +10,18 @@ import java.util.regex.Pattern;
  */
 
 public class Handler {
-    private Object controller;//method.invoke(obj,)
-
-    private Object security; //method.invoke(obj,)
-
-    public Handler(Object controller, Object security, Method method, Pattern pattern) {
-        this.controller = controller;
-        this.security = security;
-        this.method = this.method;
-        this.pattern = pattern;
-        this.paramIndexMapping = new HashMap<>();
-    }
-
-    public Object getSecurity() {
-        return security;
-    }
-
-    public void setSecurity(Object security) {
-        this.security = security;
-    }
-
+    private  Object controller;
     private Method method;
+    private Pattern pattern;
+    //参数顺序
+    private Map<String,Integer> paramIdexMapping;
 
-    private Pattern pattern;//spring中url是支持正则的
-
-    private Map<String, Integer> paramIndexMapping;//参数顺序，是为了进行参数绑定，key是参数名，value代表是第几个参数<name,2>
-
+    public Handler(Object controller, Method method, Pattern pattern) {
+        this.controller = controller;
+        this.method = method;
+        this.pattern = pattern;
+        this.paramIdexMapping = new HashMap<>();
+    }
 
     public Object getController() {
         return controller;
@@ -61,11 +47,11 @@ public class Handler {
         this.pattern = pattern;
     }
 
-    public Map<String, Integer> getParamIndexMapping() {
-        return paramIndexMapping;
+    public Map<String, Integer> getParamIdexMapping() {
+        return paramIdexMapping;
     }
 
-    public void setParamIndexMapping(Map<String, Integer> paramIndexMapping) {
-        this.paramIndexMapping = paramIndexMapping;
+    public void setParamIdexMapping(Map<String, Integer> paramIdexMapping) {
+        this.paramIdexMapping = paramIdexMapping;
     }
 }

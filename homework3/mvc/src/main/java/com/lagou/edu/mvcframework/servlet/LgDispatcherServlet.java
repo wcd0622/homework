@@ -64,18 +64,18 @@ public class LgDispatcherServlet extends HttpServlet {
             String value = StringUtils.join(param.getValue(), ",");//如果1,2
 
             //如果参数和方法中的参数匹配上了，填充数据
-            if (!handler.getParamIndexMapping().containsKey(param.getKey())) {
+            if (!handler.getParamIdexMapping().containsKey(param.getKey())) {
                 continue;
             }
             //方法形参中确实有该参数，找到他的索引位置，对应的把参数值放入paraValues
-            Integer index = handler.getParamIndexMapping().get(param.getKey());//name 在第二个位置
+            Integer index = handler.getParamIdexMapping().get(param.getKey());//name 在第二个位置
 
             paraValues[index] = value;//把前台传递过来的参数值填充到对应的位置
         }
 
-        int requestIndex = handler.getParamIndexMapping().get(HttpServletRequest.class.getSimpleName());//0
+        int requestIndex = handler.getParamIdexMapping().get(HttpServletRequest.class.getSimpleName());//0
         paraValues[requestIndex] = req;
-        int responseIndex = handler.getParamIndexMapping().get(HttpServletResponse.class.getSimpleName());
+        int responseIndex = handler.getParamIdexMapping().get(HttpServletResponse.class.getSimpleName());
         paraValues[responseIndex] = resp;
         //最终调用hanlder的method属性
         try {
@@ -86,13 +86,7 @@ public class LgDispatcherServlet extends HttpServlet {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        try {
-            handler.getMethod().invoke(handler.getSecurity(), paraValues);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private Handler getHandler(HttpServletRequest req) {
@@ -167,85 +161,35 @@ public class LgDispatcherServlet extends HttpServlet {
                 if (!method.isAnnotationPresent(LagouRequestMapping.class)) {
                     continue;
                 }
-                //方法标识LagouRequestMapping就处理
-                LagouRequestMapping annotation = method.getAnnotation(LagouRequestMapping.class);
-                String methodUrl = annotation.value(); //query
-                String url = baseUrl + methodUrl;//计算出来的url /demo/query
+                LagouSecurity security = method.getAnnotation(LagouSecurity.class);
+                if (Arrays.asList(security.value()).contains("wcd")) {
+                    //方法标识LagouRequestMapping就处理
+                    LagouRequestMapping annotation = method.getAnnotation(LagouRequestMapping.class);
+                    String methodUrl = annotation.value(); //query
+                    String url = baseUrl + methodUrl;//计算出来的url /demo/query
 
                     //把method所有信息以及url封装为一个handler
-                    Handler handler = new Handler(entry.getValue(), method, method, Pattern.compile(url));
+                    Handler handler = new Handler(entry.getValue(), method, Pattern.compile(url));
 //处理计算方法的位置参数信息 //HttpServletRequest request, HttpServletResponse response,String name
                     Parameter[] parameters = method.getParameters();
                     for (int j = 0; j < parameters.length; j++) {
                         Parameter parameter = parameters[j];
                         if (parameter.getType() == HttpServletRequest.class || parameter.getType() == HttpServletResponse.class) {
                             //如果request和response对象，那么参数名写HttpServletRequest和HttpServletResponse
-                            handler.getParamIndexMapping().put(parameter.getType().getSimpleName(), j);
+                            handler.getParamIdexMapping().put(parameter.getType().getSimpleName(), j);
                         } else {
-                            handler.getParamIndexMapping().put(parameter.getName(), j);//<name,2>
+                            handler.getParamIdexMapping().put(parameter.getName(), j);//<name,2>
                         }
                     }
 
                     //建立url和method之间的映射关系（map缓存起来）
                     handlerMapping.add(handler);
 
-
+                }
             }
         }
     }
-    private void initHandlerMapping1() {
 
-        if (ioc.isEmpty()) { return; }
-        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
-            //获取ioc中当前遍历的对象的class类型
-            Class<?> aClass = entry.getValue().getClass();
-
-
-            if (!aClass.isAnnotationPresent(LagouController.class)){
-                continue;
-            }
-
-            String baseUrl = "";
-            if (aClass.isAnnotationPresent(LagouSecurity.class)) {
-                LagouSecurity annotation = aClass.getAnnotation(LagouSecurity.class);
-                baseUrl = annotation.value();
-            }
-
-            //获取方法
-            Method[] methods = aClass.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                //方法没有标识LagouRequestMapping就不处理
-                if (!method.isAnnotationPresent(LagouSecurity.class)) {
-                    continue;
-                }
-                //方法标识LagouRequestMapping就处理
-                LagouSecurity annotation = method.getAnnotation(LagouSecurity.class);
-                String methodUrl = annotation.value();
-                String url = baseUrl + methodUrl;//计算出来的url ?username=zhangsan
-                if (url.equals("username=zhangsan")) {
-                //把method所有信息以及url封装为一个handler
-                Handler handler = new Handler(entry.getValue(),entry.getValue(), method, Pattern.compile(url));
-//处理计算方法的位置参数信息 //HttpServletRequest request, HttpServletResponse response,String name
-                Parameter[] parameters = method.getParameters();
-                for (int j = 0; j < parameters.length; j++) {
-                    Parameter parameter = parameters[j];
-                    if (parameter.getType() == HttpServletRequest.class || parameter.getType() == HttpServletResponse.class) {
-                        //如果request和response对象，那么参数名写HttpServletRequest和HttpServletResponse
-                        handler.getParamIndexMapping().put(parameter.getType().getSimpleName(),j);
-                    } else {
-                        handler.getParamIndexMapping().put(parameter.getName(), j);//<name,2>
-                    }
-                }
-                    handlerMapping.add(handler);
-                //建立url和method之间的映射关系（map缓存起来）
-                } else {
-                    System.out.println("您无权访问此页面");
-                }
-
-            }
-        }
-    }
     //实现依赖注入
     private void doAutoWired() {
 
